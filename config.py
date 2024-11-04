@@ -1,23 +1,5 @@
-# 物品配置 - 用于管理冒险岛物品相关的设置
-ITEM_CONFIG = {
-    # API相关配置
-    'API': {
-        # 冒险岛物品API的基础URL
-        'BASE_URL': 'https://maplestory.io/api/CMS/202/item/',
-        # API请求参数
-        'PARAMS': {
-            'overallCategoryFilter': 'Equip',    # 总分类：装备
-            'categoryFilter': 'Armor',           # 分类：防具
-            'subCategoryFilter': 'Hat',          # 子分类：帽子
-        },
-        'isCash': True    # 是否为商城物品
-    },
-    # 文件路径配置
-    'PATHS': {
-        'IMAGES': 'maplestory-hat',     # 帽子图片存储路径
-        'LOGS': 'logs',                 # 日志文件存储路径
-        'JSON_BASE': 'maplestory-img'   # JSON数据存储的基础路径
-    },
+# 通用配置 - 用于管理所有下载任务的通用设置
+COMMON_CONFIG = {
     # 请求相关配置
     'REQUEST': {
         'MAX_RETRIES': 3,    # 请求失败最大重试次数
@@ -26,11 +8,36 @@ ITEM_CONFIG = {
     },
     # 并发配置
     'CONCURRENT': {
-        'MAX_WORKERS': 5     # 最大并发工作线程数
+        'MAX_WORKERS': 3     # 最大并发工作线程数
+    },
+    # 文件处理策略
+    'FILE_HANDLING': {
+        # 重复文件处理策略: 'rename'(重命名) 或 'skip'(跳过) 或 'overwrite'(覆盖)
+        'STRATEGY': 'rename',
+        # 重命名模式，支持 {name}, {index}, {ext}
+        'RENAME_PATTERN': '{name}_{index}{ext}'
     }
 }
 
-# NPC配置 - 用于管理游戏中NPC相关的设置
+# 物品配置 - 用于管理冒险岛物品相关的设置
+ITEM_CONFIG = {
+    "API": {
+        "BASE_URL": "https://maplestory.io/api/CMS/202/item/",
+        "PARAMS": {
+            "overallCategoryFilter": "Equip",
+            "categoryFilter": "Armor",
+            "subCategoryFilter": "Cape"
+        },
+        "isCash": True
+    },
+    "PATHS": {
+        "IMAGES": "cape_images",
+        "LOGS": "logs",
+        "JSON_BASE": "cape_result"
+    }
+}
+
+# 游戏中NPC相关的设置
 NPC_CONFIG = {
     # TODO: 添加NPC相关配置
 }

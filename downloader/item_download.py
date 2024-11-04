@@ -4,7 +4,7 @@ import logging
 import os
 import json
 
-from config import ITEM_CONFIG
+from config import ITEM_CONFIG, COMMON_CONFIG
 from utils import (
     setup_logging, ensure_directory, get_json_filename,
     get_unique_filename, update_json_file, safe_request
@@ -32,6 +32,27 @@ def process_single_item(item, index, total):
         logging.info(
             f"Processing {index}/{total}: ID={item_id}, Name={name}, isCash={is_cash}")
 
+        base_filename = f"{name}.png"
+        file_path = os.path.join(ITEM_CONFIG['PATHS']['IMAGES'], base_filename)
+        strategy = COMMON_CONFIG['FILE_HANDLING']['STRATEGY']
+
+        if os.path.exists(file_path):
+            if strategy == 'skip':
+                logging.info(f"⚠ Skipping existing file: {base_filename}")
+                return {
+                    'id': item_id,
+                    'name': name,
+                    'isCash': is_cash,
+                    'status': 'skipped',
+                    'reason': 'File already exists'
+                }
+            elif strategy == 'rename':
+                filename = get_unique_filename(name)
+                file_path = os.path.join(
+                    ITEM_CONFIG['PATHS']['IMAGES'], filename)
+                logging.info(f"Renamed to: {filename}")
+            # strategy == 'overwrite' 的情况下继续使用原文件名和路径
+
         detail_url = f'{ITEM_CONFIG["API"]["BASE_URL"]}{item_id}/icon?resize=4'
         detail_response = safe_request(detail_url)
 
@@ -47,16 +68,19 @@ def process_single_item(item, index, total):
             }
 
         try:
-            filename = get_unique_filename(name)
-            file_path = os.path.join(ITEM_CONFIG['PATHS']['IMAGES'], filename)
-
             with open(file_path, 'wb') as f:
                 f.write(detail_response.content)
 
-            if filename != f"{name}.png":
-                logging.info(f"✓ Found duplicate name, saved as: {filename}")
+            filename = os.path.basename(file_path)
+            if os.path.exists(file_path):
+                if strategy == 'overwrite' and filename == base_filename:
+                    logging.info(f"✓ Overwritten: {filename}")
+                elif strategy == 'rename' and filename != base_filename:
+                    logging.info(f"✓ Renamed and saved as: {filename}")
+                else:
+                    logging.info(f"✓ Saved: {filename}")
             else:
-                logging.info(f"✓ Successfully saved image: {filename}")
+                logging.info(f"✓ Saved: {filename}")
 
             return {
                 'id': item_id,
@@ -91,7 +115,7 @@ def process_single_item(item, index, total):
 def fetch_and_process_items():
     setup_logging()
     ensure_directory(ITEM_CONFIG['PATHS']['IMAGES'])
-
+    logging.info(f"Ensured directory: {ITEM_CONFIG['PATHS']['IMAGES']}")
     json_filename = get_json_filename()
     logging.info(f"Results will be saved to: {json_filename}")
 
@@ -99,6 +123,7 @@ def fetch_and_process_items():
         json.dump([], f)
 
     try:
+        logging.info(f"Fetching items from: {ITEM_CONFIG['API']['BASE_URL']}")
         response = safe_request(
             ITEM_CONFIG['API']['BASE_URL'], params=ITEM_CONFIG['API']['PARAMS'])
         if response is None:
@@ -113,7 +138,7 @@ def fetch_and_process_items():
             logging.info(f"Filtering items with isCash={
                          ITEM_CONFIG['API']['isCash']}")
 
-        with ThreadPoolExecutor(max_workers=ITEM_CONFIG['CONCURRENT']['MAX_WORKERS']) as executor:
+        with ThreadPoolExecutor(max_workers=COMMON_CONFIG['CONCURRENT']['MAX_WORKERS']) as executor:
             future_to_item = {
                 executor.submit(process_single_item, item, index + 1, total_items): item
                 for index, item in enumerate(items)
