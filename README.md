@@ -30,7 +30,11 @@ pip install -r requirements.txt
 
 ## 使用说明
 
-1. 运行脚本：
+1. 检查配置文件：
+
+下载时需要配置文件中配置 API、路径、请求、并发等参数，请根据需要修改`config.py`文件。
+
+2. 运行脚本：
 
 ```bash
 python main.py

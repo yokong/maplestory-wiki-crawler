@@ -1,14 +1,14 @@
 import json
 from config import ITEM_CONFIG, NPC_CONFIG, MAP_CONFIG
-import item_download
+import downloader.item_download as item_download
 from utils import setup_logging
 
 
 def display_menu():
-    print("\n=== MapleStory Asset Downloader ===")
+    print("\n=== MapleStory Assets Downloader ===")
     print("1. Download Items")
-    print("2. Download NPCs")
-    print("3. Download Maps")
+    print("2. Download NPCs (Coming soon...)")
+    print("3. Download Maps (Coming soon...)")
     print("0. Exit")
     return input("Please select an option (0-3): ")
 
